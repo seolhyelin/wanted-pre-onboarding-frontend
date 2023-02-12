@@ -1,8 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const Todo = () => {
+  const navigate = useNavigate();
   const [todo, setTodo] = useState([]);
+
+  useEffect(() => {
+    if (!localStorage.getItem('access_token')) navigate('/signin');
+  });
 
   return (
     <TodoContainer>

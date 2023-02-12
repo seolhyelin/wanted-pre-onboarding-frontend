@@ -1,13 +1,16 @@
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ChangeEvent, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const SignUp = () => {
+  const navigate = useNavigate();
   const [emailValidation, setEmailValidation] = useState(false);
   const [passwordValidation, setPasswordValidation] = useState(false);
-
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState<number | string>();
+  const [password, setPassword] = useState<string>('');
+
+  const disabledButton = !emailValidation || !passwordValidation;
 
   const checkEmail = (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.currentTarget;
@@ -21,29 +24,26 @@ const SignUp = () => {
     setPassword(value);
   };
 
-  const handleSignUp = () => {
-    const resonse = axios
-      .post('/auth/signup', {
-        method: 'post',
-        headers: { 'Content-type': 'application/json' },
-        body: {
-          email: email,
-          password: password,
-        },
-      })
-      .then(res => console.log('res', res.data))
-      .catch(err => console.log('err', err));
-
+  const handleSignUp = (e: ChangeEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const resonse = axios({
+      method: 'post',
+      baseURL: 'https://pre-onboarding-selection-task.shop/auth/signup',
+      headers: { 'Content-Type': 'application/json' },
+      data: {
+        email,
+        password,
+      },
+    }).then(res => navigate('/signin'));
     return resonse;
   };
 
-  const test = async () => {
-    const data = await handleSignUp();
-    return data;
-  };
+  useEffect(() => {
+    if (localStorage.getItem('access_token')) navigate('/todo');
+  });
 
   return (
-    <SignUpContainer>
+    <SignUpContainer onSubmit={handleSignUp}>
       <ImailContainer>
         <p>이메일</p>
         <input onChange={checkEmail} data-testid="email-input" />
@@ -52,18 +52,18 @@ const SignUp = () => {
         <p>패스워드</p>
         <input onChange={checkPassword} data-testid="password-input" />
       </PasswordContainer>
-      {emailValidation && passwordValidation ? (
-        <button data-testid="signup-button">회원가입</button>
-      ) : (
-        <button disabled data-testid="signup-button" onClick={test}>
-          회원가입
-        </button>
-      )}
+      <button
+        data-testid="signup-button"
+        type="submit"
+        disabled={disabledButton}
+      >
+        회원가입
+      </button>
     </SignUpContainer>
   );
 };
 
-const SignUpContainer = styled.div`
+const SignUpContainer = styled.form`
   display: flex;
   flex-direction: column;
   width: 300px;
