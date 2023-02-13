@@ -1,25 +1,58 @@
-import { MouseEvent, ChangeEvent, useEffect, useState } from 'react';
+import { MouseEvent, ChangeEvent, useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+interface TodoInfo {
+  text: string;
+  checked: boolean;
+}
+
 const Todo = () => {
   const navigate = useNavigate();
-  const [todo, setTodo] = useState([{ text: '산책하기', checked: false }]);
+  // 제어 컴포넌트와 비제어 컴포넌트(useRef vs useState)
+  const input = useRef<HTMLInputElement | null>(null);
+  const [todo, setTodo] = useState<TodoInfo[]>([]);
+
+  const onChangeInput = (e: ChangeEvent<HTMLInputElement>) => {
+    if (input.current) {
+      input.current.value = e.currentTarget.value;
+    }
+  };
+
+  const onSubmitTodo = (e: ChangeEvent<HTMLFormElement>) => {
+    if (input.current) {
+      e.preventDefault();
+      // 리액트 불변성
+      // setTodo([{ text: e.currentTarget.value, checked: false }])
+      const newTodo = todo.concat({
+        text: input.current.value,
+        checked: false,
+      });
+      input.current.value = '';
+      setTodo(newTodo);
+    }
+  };
+
+  const onDeleteTodo = (e: MouseEvent<HTMLButtonElement>) => {
+    // todo.filter();
+  };
+
+  const onEditTodo = (e: MouseEvent<HTMLButtonElement>) => {
+    //todo.find()
+  };
 
   useEffect(() => {
     if (!localStorage.getItem('access_token')) navigate('/signin');
   });
 
-  const inputTodoList = (e: ChangeEvent<HTMLInputElement>) => {
-    setTodo([{ text: e.currentTarget.value, checked: false }]);
-  };
-
-  const addTodoList = (e: MouseEvent<HTMLButtonElement>) => {};
-
   return (
     <TodoContainer>
-      <InputContainer>
-        <input onChange={inputTodoList} data-testid="new-todo-input" />
+      <InputContainer onSubmit={onSubmitTodo}>
+        <input
+          ref={input}
+          onChange={onChangeInput}
+          data-testid="new-todo-input"
+        />
         <button type="submit" data-testid="new-todo-add-button">
           추가
         </button>
