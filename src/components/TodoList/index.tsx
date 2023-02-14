@@ -1,16 +1,23 @@
-import { MouseEvent, ChangeEvent, useEffect, useState, useRef } from 'react';
+import {
+  MouseEvent,
+  ChangeEvent,
+  useEffect,
+  useState,
+  useRef,
+  createRef,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 interface TodoInfo {
+  id: number;
   text: string;
   checked: boolean;
 }
 
 const Todo = () => {
   const navigate = useNavigate();
-  // 제어 컴포넌트와 비제어 컴포넌트(useRef vs useState)
-  const input = useRef<HTMLInputElement | null>(null);
+  const input = createRef<HTMLInputElement>();
   const [todo, setTodo] = useState<TodoInfo[]>([]);
 
   const onChangeInput = (e: ChangeEvent<HTMLInputElement>) => {
@@ -22,9 +29,8 @@ const Todo = () => {
   const onSubmitTodo = (e: ChangeEvent<HTMLFormElement>) => {
     if (input.current) {
       e.preventDefault();
-      // 리액트 불변성
-      // setTodo([{ text: e.currentTarget.value, checked: false }])
       const newTodo = todo.concat({
+        id: todo.length,
         text: input.current.value,
         checked: false,
       });
@@ -33,8 +39,9 @@ const Todo = () => {
     }
   };
 
-  const onDeleteTodo = (e: MouseEvent<HTMLButtonElement>) => {
-    // todo.filter();
+  const onDeleteTodo = (list: any) => {
+    const deleteList = todo.filter(todo => todo.id !== list.id);
+    setTodo(deleteList);
   };
 
   const onEditTodo = (e: MouseEvent<HTMLButtonElement>) => {
@@ -66,7 +73,12 @@ const Todo = () => {
                 <span>{todo.text}</span>
               </label>
               <button data-testid="modify-button">수정</button>
-              <button data-testid="delete-button">삭제</button>
+              <button
+                onClick={() => onDeleteTodo(todo)}
+                data-testid="delete-button"
+              >
+                삭제
+              </button>
             </li>
           );
         })}
