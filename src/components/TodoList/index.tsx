@@ -1,4 +1,4 @@
-import { MouseEvent, ChangeEvent, useEffect, useState, createRef } from 'react';
+import { ChangeEvent, useEffect, useState, createRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -13,8 +13,6 @@ const Todo = () => {
   const input = createRef<HTMLInputElement>();
   const [todo, setTodo] = useState<TodoInfo[]>([]);
   const [edited, setEdited] = useState(false);
-  const [editedText, setEditedText] = useState<TodoInfo[]>([]);
-  console.log(editedText);
 
   const onChangeInput = (e: ChangeEvent<HTMLInputElement>) => {
     if (input.current) {
@@ -25,7 +23,7 @@ const Todo = () => {
   const onSubmitTodo = (e: ChangeEvent<HTMLFormElement>) => {
     if (input.current) {
       e.preventDefault();
-      const newTodo = todo.concat({
+      const newTodo = todo?.concat({
         id: todo.length,
         text: input.current.value,
         checked: false,
@@ -36,7 +34,7 @@ const Todo = () => {
   };
 
   const onDeleteTodo = (list: any) => {
-    const deleteList = todo.filter(todo => todo.id !== list.id);
+    const deleteList = todo?.filter(todo => todo.id !== list.id);
     setTodo(deleteList);
   };
 
@@ -44,18 +42,20 @@ const Todo = () => {
     setEdited(true);
   };
 
-  const onEditTodo = (e: MouseEvent<HTMLButtonElement>) => {
-    //todo.find()
-    if (input.current) {
-      e.preventDefault();
-      const newTodo = todo.concat({
-        id: todo.length,
-        text: input.current.value,
+  const onEditTodo = (index: number) => {
+    const inputValue = input.current?.value;
+    const newArr = [...todo];
+    if (inputValue) {
+      newArr[index] = {
+        id: index,
+        text: inputValue,
         checked: false,
-      });
-      setEditedText(newTodo);
+      };
     }
+    setTodo(newArr);
+  };
 
+  const submitNewTodo = () => {
     setEdited(false);
   };
 
@@ -76,7 +76,7 @@ const Todo = () => {
         </button>
       </InputContainer>
       <ListContainer>
-        {todo.map(todo => {
+        {todo?.map((todo, index) => {
           return (
             <li key={todo.text}>
               <input type="checkbox" />
@@ -87,13 +87,16 @@ const Todo = () => {
                     onChange={onChangeInput}
                     data-testid="modify-input"
                   />
-                  <button onClick={onEditTodo} data-testid="submit-button">
+                  <button
+                    onClick={() => onEditTodo(index)}
+                    data-testid="submit-button"
+                  >
                     제출
                   </button>
                   <button data-testid="cancel-button">취소</button>
                 </EditedContainer>
               ) : (
-                <>
+                <EditedContainer>
                   <span>{todo.text}</span>
                   <button
                     onClick={handleEditButton}
@@ -107,7 +110,7 @@ const Todo = () => {
                   >
                     삭제
                   </button>
-                </>
+                </EditedContainer>
               )}
             </li>
           );
